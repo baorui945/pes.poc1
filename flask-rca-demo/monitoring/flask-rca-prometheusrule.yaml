@@ -1,0 +1,23 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: flask-rca-alerts
+  namespace: rca-demo
+  labels:
+    app: flask-rca-demo
+    prometheus: k8s
+spec:
+  groups:
+    - name: flask-rca.rules
+      rules:
+        - alert: HighFlaskAppErrorRate
+          expr: |
+            rate(app_errors_total{namespace="rca-demo"}[5m]) > 0.1
+          for: 2m
+          labels:
+            severity: warning
+            team: devops
+          annotations:
+            summary: "High error rate in flask-rca-demo"
+            description: "The flask-rca-demo application is generating errors at a rate of {{ $value | humanize }} errors/sec over the last 5 minutes."
+            runbook_url: "https://github.com/your-org/runbooks/blob/main/flask-rca-error.md"

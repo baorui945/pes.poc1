@@ -1,0 +1,6 @@
+apiVersion: v2
+name: flask-rca-demo
+description: A Flask demo app for Root Cause Analysis (RCA) with logs, metrics, and simulated failures — ideal for Robusta monitoring.
+type: application
+version: 0.1.0
+appVersion: "1.0"

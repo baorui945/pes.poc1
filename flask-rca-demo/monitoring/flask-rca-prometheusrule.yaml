@@ -1,0 +1,22 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+meta
+  name: flask-rca-alerts
+  namespace: rca-demo
+  labels:
+    app: flask-rca-demo
+    prometheus: k8s
+spec:
+  groups:
+    - name: flask-rca.rules
+      rules:
+        - alert: HighFlaskAppErrorRate
+          expr: |
+            rate(app_errors_total{namespace="rca-demo"}[5m]) > 0.1
+          for: 2m
+          labels:
+            severity: warning
+            team: devops
+          annotations:
+            summary: "High error rate in flask-rca-demo"
+            description: "Error rate exceeds 0.1 errors/sec."

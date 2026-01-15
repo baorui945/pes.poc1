@@ -1,0 +1,6 @@
+apiVersion: v2
+name: flask-rca-demo
+description: A log-free Flask demo for RCA using Prometheus metrics and Kubernetes Events — ideal for Robusta.
+type: application
+version: 0.1.0
+appVersion: "1.0"

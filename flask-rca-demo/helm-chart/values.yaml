@@ -1,0 +1,31 @@
+image:
+  repository: flask-rca-demo
+  tag: "latest"
+  pullPolicy: IfNotPresent
+
+resources:
+  limits:
+    memory: "128Mi"
+    cpu: "200m"
+  requests:
+    memory: "64Mi"
+    cpu: "100m"
+
+service:
+  type: ClusterIP
+  port: 5000
+
+livenessProbe:
+  enabled: true
+  path: /health
+  initialDelaySeconds: 5
+  periodSeconds: 10
+
+readinessProbe:
+  enabled: true
+  path: /health
+  initialDelaySeconds: 3
+  periodSeconds: 5
+
+rbac:
+  create: true

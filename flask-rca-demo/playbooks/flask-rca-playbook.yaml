@@ -1,0 +1,49 @@
+triggers:
+  # 基于 Kubernetes Event 触发（核心！）
+  - on_kubernetes_event:
+      name: "flask-app-failure-event"
+      filters:
+        namespace: "rca-demo"
+        involved_object_kind: "Pod"
+        reason:
+          - "ValidationError"
+          - "DatabaseConnectionError"
+          - "ThirdPartyTimeout"
+          - "UnexpectedError"
+      actions:
+        - builtin_action: "event_enricher"
+          params:
+            named_captures:
+              error_type: 'reason:\s*"([^"]+)"'
+
+        - builtin_action: "slack_sender"
+          params:
+            slack_channel: "#alerts-devops"
+            message: |
+              :rotating_light: **Flask App Failure Detected via Kubernetes Event**
+              - **Error Type**: {{ error_type }}
+              - **Pod**: {{ pod_name }}
+              - **Namespace**: {{ namespace }}
+              - **Message**: {{ event.message }}
+
+        - builtin_action: "prometheus_query"
+          params:
+            prometheus_url: "http://prometheus-k8s.monitoring.svc:9090"
+            queries:
+              - name: "error_count_last_5m"
+                query: 'sum(app_errors_total{namespace="rca-demo", error_type="{{ error_type }}"}[5m])'
+            result_format: "table"
+
+        - builtin_action: "krr_resource_recommendations"
+          params:
+            namespaces: ["rca-demo"]
+            strategy: "balanced"
+
+  # 备用：基于 Prometheus 告警
+  - on_prometheus_alert:
+      alert_name: "HighFlaskAppErrorRate"
+      actions:
+        - builtin_action: "slack_sender"
+          params:
+            slack_channel: "#alerts-devops"
+            message: ":chart_with_downwards_trend: High error rate in flask-rca-demo!"

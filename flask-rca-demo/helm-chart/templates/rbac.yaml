@@ -1,0 +1,35 @@
+{{- if .Values.rbac.create }}
+apiVersion: v1
+kind: ServiceAccount
+meta
+  name: {{ include "flask-rca-demo.fullname" . }}
+  labels:
+    {{- include "flask-rca-demo.labels" . | nindent 4 }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+meta
+  name: {{ include "flask-rca-demo.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "flask-rca-demo.labels" . | nindent 4 }}
+rules:
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["create"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+meta
+  name: {{ include "flask-rca-demo.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "flask-rca-demo.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ include "flask-rca-demo.fullname" . }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "flask-rca-demo.fullname" . }}
+{{- end }}
